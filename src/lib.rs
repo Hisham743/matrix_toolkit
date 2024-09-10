@@ -81,7 +81,7 @@ impl Matrix {
         })
     }
 
-    pub fn new_diagonal_matrix(diagonal_elements: &Vec<f64>) -> Result<Self, MatrixError> {
+    pub fn new_diagonal_matrix(diagonal_elements: &[f64]) -> Result<Self, MatrixError> {
         if diagonal_elements.is_empty() {
             return Err(MatrixError::ZeroDimension);
         }

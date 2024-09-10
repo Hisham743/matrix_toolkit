@@ -168,7 +168,7 @@ impl Cli {
                 let matrix_name = self.prompt_name()?;
                 let scalar: f64 = cliclack::input("The scalar value")
                     .validate_interactively(|input: &String| {
-                        if !input.parse::<f64>().is_ok() {
+                        if input.parse::<f64>().is_err() {
                             Err("The scalar should be a real number")
                         } else {
                             Ok(())
@@ -205,7 +205,7 @@ impl Cli {
                 let values = input_string
                     .split_whitespace()
                     .map(|num| num.parse().unwrap())
-                    .collect();
+                    .collect::<Vec<_>>();
 
                 let matrix: Matrix = Matrix::new_diagonal_matrix(&values).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
@@ -290,7 +290,7 @@ impl Cli {
             "scale" => {
                 let scalar: f64 = cliclack::input("The scalar value")
                     .validate_interactively(|input: &String| {
-                        if !input.parse::<f64>().is_ok() {
+                        if input.parse::<f64>().is_err() {
                             Err("The scalar should be a real number")
                         } else {
                             Ok(())
