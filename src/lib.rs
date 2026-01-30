@@ -223,7 +223,7 @@ impl Matrix {
     }
 }
 
-#[allow(dead_code)]
+#[cfg(test)]
 mod test_utils {
     use super::*;
 

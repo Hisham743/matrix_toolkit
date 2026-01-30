@@ -63,8 +63,7 @@ impl Matrix {
     }
 
     pub fn is_singular(&self) -> bool {
-        self.determinant()
-            .map_or(false, |determinant| determinant == 0.0)
+        self.determinant() == Ok(0.0)
     }
 }
 
