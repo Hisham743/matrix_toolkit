@@ -34,7 +34,7 @@ impl Display for Matrix {
                     .iter()
                     .map(|x| x.to_string().len())
                     .max()
-                    .expect("Getting maximum column length")
+                    .expect("Matrix must not be empty")
             })
             .collect();
 
@@ -90,8 +90,8 @@ impl Matrix {
             return Err(MatrixError::ZeroDimension);
         }
 
-        let mut diagonal_matrix =
-            Matrix::new_zero_matrix(diagonal_elements.len(), diagonal_elements.len()).unwrap();
+        let size = diagonal_elements.len();
+        let mut diagonal_matrix = Matrix::new_zero_matrix(size, size).unwrap();
 
         diagonal_elements
             .iter()

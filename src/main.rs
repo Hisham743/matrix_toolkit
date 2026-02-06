@@ -152,7 +152,7 @@ impl Cli {
                     })
                     .collect();
 
-                let matrix: Matrix = Matrix::new_with_data(values).expect(Self::ALREADY_VALIDATED);
+                let matrix = Matrix::new_with_data(values).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
