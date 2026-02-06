@@ -70,13 +70,17 @@ impl Matrix {
     }
 
     pub fn new_with_data(data: Vec<Vec<f64>>) -> Result<Self, MatrixError> {
+        if data.is_empty() {
+            return Err(MatrixError::ZeroDimension);
+        }
+
         if data.iter().any(|row| data[0].len() != row.len()) {
             return Err(MatrixError::InconsistentColumnSize);
         };
 
         Ok(Self {
             rows: data.len(),
-            columns: if data.is_empty() { 0 } else { data[0].len() },
+            columns: data[0].len(),
             data,
         })
     }
@@ -305,6 +309,11 @@ mod tests {
                 data: vec![vec![4.5, 54.6, 0.0], vec![2.4, 10.4, 1.8]]
             },
             Matrix::new_with_data(vec![vec![4.5, 54.6, 0.0], vec![2.4, 10.4, 1.8]]).unwrap()
+        );
+
+        assert_eq!(
+            MatrixError::ZeroDimension,
+            Matrix::new_with_data(vec![]).unwrap_err()
         );
 
         assert_eq!(
