@@ -1,10 +1,10 @@
 use cliclack::log;
 use matrix_core::{Matrix, MatrixError};
-use std::{cell::RefCell, collections::HashMap, io, ops::Deref, process, rc::Rc};
+use std::{collections::HashMap, io, ops::Deref, process, rc::Rc};
 
 fn main() -> io::Result<()> {
-    let cli = Cli {
-        matrices: RefCell::new(HashMap::new()),
+    let mut cli = Cli {
+        matrices: HashMap::new(),
     };
 
     cli.start()?;
@@ -12,11 +12,11 @@ fn main() -> io::Result<()> {
 }
 
 struct Cli {
-    matrices: RefCell<HashMap<String, Rc<Matrix>>>,
+    matrices: HashMap<String, Rc<Matrix>>,
 }
 
 impl Cli {
-    fn start(&self) -> io::Result<()> {
+    fn start(&mut self) -> io::Result<()> {
         cliclack::clear_screen()?;
         cliclack::intro("Matrix Toolkit")?;
 
@@ -24,7 +24,7 @@ impl Cli {
         Ok(())
     }
 
-    fn main_menu(&self) -> io::Result<()> {
+    fn main_menu(&mut self) -> io::Result<()> {
         let action = cliclack::select("What do you want to do?")
             .item("create", "Create a Matrix", "")
             .item("operate", "Perform Matrix Operations", "")
@@ -61,7 +61,7 @@ impl Cli {
             })
             .interact()?;
 
-        while self.matrices.borrow().contains_key(&name) {
+        while self.matrices.contains_key(&name) {
             log::error("A matrix with that name is already created")?;
             name = cliclack::input("Choose a new name").interact()?;
         }
@@ -82,7 +82,7 @@ impl Cli {
         Ok(size)
     }
 
-    fn create_matrix(&self) -> io::Result<()> {
+    fn create_matrix(&mut self) -> io::Result<()> {
         let creation_method = cliclack::select("How do you want to create the matrix?")
             .item("manual", "Enter matrix elements manually", "")
             .item("zero", "Create a zero matrix", "")
@@ -130,9 +130,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_with_data(values).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices
-                    .borrow_mut()
-                    .insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, Rc::new(matrix));
             }
             "zero" => {
                 let matrix_name = self.prompt_name()?;
@@ -147,9 +145,7 @@ impl Cli {
 
                 let matrix = Matrix::new_zero_matrix(rows, columns).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices
-                    .borrow_mut()
-                    .insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, Rc::new(matrix));
             }
             "identity" => {
                 let matrix_name = self.prompt_name()?;
@@ -160,9 +156,7 @@ impl Cli {
 
                 let matrix = Matrix::nth_identity(size).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices
-                    .borrow_mut()
-                    .insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, Rc::new(matrix));
             }
             "scalar" => {
                 let matrix_name = self.prompt_name()?;
@@ -183,9 +177,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_scalar_matrix(scalar, size).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices
-                    .borrow_mut()
-                    .insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, Rc::new(matrix));
             }
             "diagonal" => {
                 let matrix_name = self.prompt_name()?;
@@ -209,9 +201,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_diagonal_matrix(&values).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices
-                    .borrow_mut()
-                    .insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, Rc::new(matrix));
             }
             "back" => self.main_menu()?,
             _ => unreachable!(),
@@ -224,9 +214,9 @@ impl Cli {
         }
     }
 
-    fn prompt_matrix(&self, prompt: &'static str) -> io::Result<Rc<Matrix>> {
+    fn prompt_matrix(&mut self, prompt: &'static str) -> io::Result<Rc<Matrix>> {
         let mut matrix_name: String = cliclack::input(prompt).interact()?;
-        while !self.matrices.borrow().contains_key(&matrix_name) {
+        while !self.matrices.contains_key(&matrix_name) {
             log::error("A matrix with that name is not created yet")?;
             let create_matrix = cliclack::confirm("Do you want to create a new matrix?")
                 .initial_value(true)
@@ -239,10 +229,10 @@ impl Cli {
             }
         }
 
-        Ok(Rc::clone(self.matrices.borrow().get(&matrix_name).unwrap()))
+        Ok(Rc::clone(self.matrices.get(&matrix_name).unwrap()))
     }
 
-    fn perform_operations(&self) -> io::Result<()> {
+    fn perform_operations(&mut self) -> io::Result<()> {
         let operation = cliclack::select("Choose an operation")
             .item("add", "Addition", "")
             .item("subtract", "Subtraction", "")
@@ -362,7 +352,7 @@ impl Cli {
         }
     }
 
-    fn check_properties(&self) -> io::Result<()> {
+    fn check_properties(&mut self) -> io::Result<()> {
         let matrix = self.prompt_matrix("Name of the matrix")?;
 
         let value_labels = [
