@@ -24,6 +24,22 @@ impl Cli {
             .expect("Matrix with this name must exist at this point")
     }
 
+    fn prompt_and_get_a_matrix(&mut self) -> io::Result<&Matrix> {
+        let matrix_name = self.prompt_matrix("Name of the matrix")?;
+        let matrix = self.get_matrix(&matrix_name);
+        Ok(matrix)
+    }
+
+    fn prompt_and_get_two_matrices(&mut self) -> io::Result<(&Matrix, &Matrix)> {
+        let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
+        let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
+
+        let matrix1 = self.get_matrix(&matrix_name1);
+        let matrix2 = self.get_matrix(&matrix_name2);
+
+        Ok((matrix1, matrix2))
+    }
+
     fn start(&mut self) -> io::Result<()> {
         cliclack::clear_screen()?;
         cliclack::intro("Matrix Toolkit")?;
@@ -258,12 +274,7 @@ impl Cli {
 
         match operation {
             "add" => {
-                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
-
-                let matrix1 = self.get_matrix(&matrix_name1);
-                let matrix2 = self.get_matrix(&matrix_name2);
-
+                let (matrix1, matrix2) = self.prompt_and_get_two_matrices()?;
                 let result = matrix1 + matrix2;
 
                 match result {
@@ -272,12 +283,7 @@ impl Cli {
                 };
             }
             "subtract" => {
-                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
-
-                let matrix1 = self.get_matrix(&matrix_name1);
-                let matrix2 = self.get_matrix(&matrix_name2);
-
+                let (matrix1, matrix2) = self.prompt_and_get_two_matrices()?;
                 let result = matrix1 - matrix2;
 
                 match result {
@@ -286,12 +292,7 @@ impl Cli {
                 };
             }
             "multiply" => {
-                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
-
-                let matrix1 = self.get_matrix(&matrix_name1);
-                let matrix2 = self.get_matrix(&matrix_name2);
-
+                let (matrix1, matrix2) = self.prompt_and_get_two_matrices()?;
                 let result = matrix1 * matrix2;
 
                 match result {
@@ -310,16 +311,12 @@ impl Cli {
                     })
                     .interact()?;
 
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let scaled_matrix = scalar * matrix;
                 cliclack::note("Scaled Matrix", scaled_matrix)?;
             }
             "trace" => {
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let result = matrix.trace();
 
                 match result {
@@ -328,16 +325,12 @@ impl Cli {
                 };
             }
             "transpose" => {
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let transpose = matrix.transpose();
                 cliclack::note("Transpose", transpose)?;
             }
             "determinant" => {
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let result = matrix.determinant();
 
                 match result {
@@ -346,9 +339,7 @@ impl Cli {
                 };
             }
             "adjoint" => {
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let result = matrix.adjoint();
 
                 match result {
@@ -357,9 +348,7 @@ impl Cli {
                 };
             }
             "inverse" => {
-                let matrix_name = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.get_matrix(&matrix_name);
-
+                let matrix = self.prompt_and_get_a_matrix()?;
                 let result = matrix.inverse();
 
                 match result {
