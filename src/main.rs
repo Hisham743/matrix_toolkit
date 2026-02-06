@@ -1,6 +1,6 @@
 use cliclack::log;
 use matrix_core::{Matrix, MatrixError};
-use std::{collections::HashMap, io, ops::Deref, process, rc::Rc};
+use std::{collections::HashMap, io, process};
 
 fn main() -> io::Result<()> {
     let mut cli = Cli {
@@ -12,7 +12,7 @@ fn main() -> io::Result<()> {
 }
 
 struct Cli {
-    matrices: HashMap<String, Rc<Matrix>>,
+    matrices: HashMap<String, Matrix>,
 }
 
 impl Cli {
@@ -130,7 +130,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_with_data(values).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices.insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, matrix);
             }
             "zero" => {
                 let matrix_name = self.prompt_name()?;
@@ -145,7 +145,7 @@ impl Cli {
 
                 let matrix = Matrix::new_zero_matrix(rows, columns).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices.insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, matrix);
             }
             "identity" => {
                 let matrix_name = self.prompt_name()?;
@@ -156,7 +156,7 @@ impl Cli {
 
                 let matrix = Matrix::nth_identity(size).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices.insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, matrix);
             }
             "scalar" => {
                 let matrix_name = self.prompt_name()?;
@@ -177,7 +177,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_scalar_matrix(scalar, size).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices.insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, matrix);
             }
             "diagonal" => {
                 let matrix_name = self.prompt_name()?;
@@ -201,7 +201,7 @@ impl Cli {
 
                 let matrix: Matrix = Matrix::new_diagonal_matrix(&values).unwrap();
                 cliclack::note(&matrix_name, &matrix)?;
-                self.matrices.insert(matrix_name, Rc::new(matrix));
+                self.matrices.insert(matrix_name, matrix);
             }
             "back" => self.main_menu()?,
             _ => unreachable!(),
@@ -214,7 +214,7 @@ impl Cli {
         }
     }
 
-    fn prompt_matrix(&mut self, prompt: &'static str) -> io::Result<Rc<Matrix>> {
+    fn prompt_matrix(&mut self, prompt: &'static str) -> io::Result<String> {
         let mut matrix_name: String = cliclack::input(prompt).interact()?;
         while !self.matrices.contains_key(&matrix_name) {
             log::error("A matrix with that name is not created yet")?;
@@ -229,7 +229,7 @@ impl Cli {
             }
         }
 
-        Ok(Rc::clone(self.matrices.get(&matrix_name).unwrap()))
+        Ok(matrix_name)
     }
 
     fn perform_operations(&mut self) -> io::Result<()> {
@@ -250,7 +250,11 @@ impl Cli {
             "add" => {
                 let matrix1 = self.prompt_matrix("Name of the first matrix")?;
                 let matrix2 = self.prompt_matrix("Name of the second matrix")?;
-                let result = matrix1.deref() + matrix2.deref();
+
+                let matrix1 = self.matrices.get(&matrix1).unwrap();
+                let matrix2 = self.matrices.get(&matrix2).unwrap();
+
+                let result = matrix1 + matrix2;
 
                 match result {
                     Err(_) => log::error("Dimensions of the two matrices do not match")?,
@@ -260,7 +264,11 @@ impl Cli {
             "subtract" => {
                 let matrix1 = self.prompt_matrix("Name of the first matrix")?;
                 let matrix2 = self.prompt_matrix("Name of the second matrix")?;
-                let result = matrix1.deref() - matrix2.deref();
+
+                let matrix1 = self.matrices.get(&matrix1).unwrap();
+                let matrix2 = self.matrices.get(&matrix2).unwrap();
+
+                let result = matrix1 - matrix2;
 
                 match result {
                     Err(_) => log::error("Dimensions of the two matrices do not match")?,
@@ -270,7 +278,11 @@ impl Cli {
             "multiply" => {
                 let matrix1 = self.prompt_matrix("Name of the first matrix")?;
                 let matrix2 = self.prompt_matrix("Name of the second matrix")?;
-                let result = matrix1.deref() * matrix2.deref();
+
+                let matrix1 = self.matrices.get(&matrix1).unwrap();
+                let matrix2 = self.matrices.get(&matrix2).unwrap();
+
+                let result = matrix1 * matrix2;
 
                 match result {
                     Err(_) => log::error("Number of columns of the first matrix is not equal to the number of rows of the second matrix")?,
@@ -289,11 +301,15 @@ impl Cli {
                     .interact()?;
 
                 let matrix = self.prompt_matrix("Name of the matrix")?;
-                let scaled_matrix = scalar * matrix.deref();
+                let matrix = self.matrices.get(&matrix).unwrap();
+
+                let scaled_matrix = scalar * matrix;
                 cliclack::note("Scaled Matrix", scaled_matrix)?;
             }
             "trace" => {
                 let matrix = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.matrices.get(&matrix).unwrap();
+
                 let result = matrix.trace();
 
                 match result {
@@ -303,11 +319,15 @@ impl Cli {
             }
             "transpose" => {
                 let matrix = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.matrices.get(&matrix).unwrap();
+
                 let transpose = matrix.transpose();
                 cliclack::note("Transpose", transpose)?;
             }
             "determinant" => {
                 let matrix = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.matrices.get(&matrix).unwrap();
+
                 let result = matrix.determinant();
 
                 match result {
@@ -317,6 +337,8 @@ impl Cli {
             }
             "adjoint" => {
                 let matrix = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.matrices.get(&matrix).unwrap();
+
                 let result = matrix.adjoint();
 
                 match result {
@@ -326,6 +348,8 @@ impl Cli {
             }
             "inverse" => {
                 let matrix = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.matrices.get(&matrix).unwrap();
+
                 let result = matrix.inverse();
 
                 match result {
@@ -379,6 +403,8 @@ impl Cli {
         if properties.contains(&"back") {
             self.main_menu()?;
         }
+
+        let matrix = self.matrices.get(&matrix).unwrap();
 
         let mut results = HashMap::new();
         properties.iter().for_each(|property| {
