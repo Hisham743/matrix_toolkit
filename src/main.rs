@@ -16,6 +16,14 @@ struct Cli {
 }
 
 impl Cli {
+    const ALREADY_VALIDATED: &str = "Input must be validated by this point";
+
+    fn get_matrix(&self, name: &str) -> &Matrix {
+        self.matrices
+            .get(name)
+            .expect("Matrix with this name must exist at this point")
+    }
+
     fn start(&mut self) -> io::Result<()> {
         cliclack::clear_screen()?;
         cliclack::intro("Matrix Toolkit")?;
@@ -123,12 +131,12 @@ impl Cli {
                     .lines()
                     .map(|line| {
                         line.split_whitespace()
-                            .map(|num| num.parse().unwrap())
+                            .map(|num| num.parse().expect(Self::ALREADY_VALIDATED))
                             .collect()
                     })
                     .collect();
 
-                let matrix: Matrix = Matrix::new_with_data(values).unwrap();
+                let matrix: Matrix = Matrix::new_with_data(values).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
@@ -143,7 +151,7 @@ impl Cli {
                     "Number of columns should be a whole number greater than 0",
                 )?;
 
-                let matrix = Matrix::new_zero_matrix(rows, columns).unwrap();
+                let matrix = Matrix::new_zero_matrix(rows, columns).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
@@ -154,7 +162,7 @@ impl Cli {
                     "Size should be a whole number greater than 0",
                 )?;
 
-                let matrix = Matrix::nth_identity(size).unwrap();
+                let matrix = Matrix::nth_identity(size).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
@@ -175,7 +183,8 @@ impl Cli {
                     "Size should be a whole number greater than 0",
                 )?;
 
-                let matrix: Matrix = Matrix::new_scalar_matrix(scalar, size).unwrap();
+                let matrix: Matrix =
+                    Matrix::new_scalar_matrix(scalar, size).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
@@ -196,10 +205,11 @@ impl Cli {
 
                 let values = input_string
                     .split_whitespace()
-                    .map(|num| num.parse().unwrap())
+                    .map(|num| num.parse().expect(Self::ALREADY_VALIDATED))
                     .collect::<Vec<_>>();
 
-                let matrix: Matrix = Matrix::new_diagonal_matrix(&values).unwrap();
+                let matrix: Matrix =
+                    Matrix::new_diagonal_matrix(&values).expect(Self::ALREADY_VALIDATED);
                 cliclack::note(&matrix_name, &matrix)?;
                 self.matrices.insert(matrix_name, matrix);
             }
@@ -248,11 +258,11 @@ impl Cli {
 
         match operation {
             "add" => {
-                let matrix1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix2 = self.prompt_matrix("Name of the second matrix")?;
+                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
+                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
 
-                let matrix1 = self.matrices.get(&matrix1).unwrap();
-                let matrix2 = self.matrices.get(&matrix2).unwrap();
+                let matrix1 = self.get_matrix(&matrix_name1);
+                let matrix2 = self.get_matrix(&matrix_name2);
 
                 let result = matrix1 + matrix2;
 
@@ -262,11 +272,11 @@ impl Cli {
                 };
             }
             "subtract" => {
-                let matrix1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix2 = self.prompt_matrix("Name of the second matrix")?;
+                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
+                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
 
-                let matrix1 = self.matrices.get(&matrix1).unwrap();
-                let matrix2 = self.matrices.get(&matrix2).unwrap();
+                let matrix1 = self.get_matrix(&matrix_name1);
+                let matrix2 = self.get_matrix(&matrix_name2);
 
                 let result = matrix1 - matrix2;
 
@@ -276,11 +286,11 @@ impl Cli {
                 };
             }
             "multiply" => {
-                let matrix1 = self.prompt_matrix("Name of the first matrix")?;
-                let matrix2 = self.prompt_matrix("Name of the second matrix")?;
+                let matrix_name1 = self.prompt_matrix("Name of the first matrix")?;
+                let matrix_name2 = self.prompt_matrix("Name of the second matrix")?;
 
-                let matrix1 = self.matrices.get(&matrix1).unwrap();
-                let matrix2 = self.matrices.get(&matrix2).unwrap();
+                let matrix1 = self.get_matrix(&matrix_name1);
+                let matrix2 = self.get_matrix(&matrix_name2);
 
                 let result = matrix1 * matrix2;
 
@@ -300,15 +310,15 @@ impl Cli {
                     })
                     .interact()?;
 
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let scaled_matrix = scalar * matrix;
                 cliclack::note("Scaled Matrix", scaled_matrix)?;
             }
             "trace" => {
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let result = matrix.trace();
 
@@ -318,15 +328,15 @@ impl Cli {
                 };
             }
             "transpose" => {
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let transpose = matrix.transpose();
                 cliclack::note("Transpose", transpose)?;
             }
             "determinant" => {
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let result = matrix.determinant();
 
@@ -336,8 +346,8 @@ impl Cli {
                 };
             }
             "adjoint" => {
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let result = matrix.adjoint();
 
@@ -347,8 +357,8 @@ impl Cli {
                 };
             }
             "inverse" => {
-                let matrix = self.prompt_matrix("Name of the matrix")?;
-                let matrix = self.matrices.get(&matrix).unwrap();
+                let matrix_name = self.prompt_matrix("Name of the matrix")?;
+                let matrix = self.get_matrix(&matrix_name);
 
                 let result = matrix.inverse();
 
@@ -377,7 +387,7 @@ impl Cli {
     }
 
     fn check_properties(&mut self) -> io::Result<()> {
-        let matrix = self.prompt_matrix("Name of the matrix")?;
+        let matrix_name = self.prompt_matrix("Name of the matrix")?;
 
         let value_labels = [
             ("square", "Is Square"),
@@ -401,10 +411,10 @@ impl Cli {
             .interact()?;
 
         if properties.contains(&"back") {
-            self.main_menu()?;
+            return self.main_menu();
         }
 
-        let matrix = self.matrices.get(&matrix).unwrap();
+        let matrix = self.get_matrix(&matrix_name);
 
         let mut results = HashMap::new();
         properties.iter().for_each(|property| {
@@ -428,7 +438,7 @@ impl Cli {
                 .iter()
                 .find(|(value, _)| value == property)
                 .map(|(_, label)| *label)
-                .unwrap();
+                .expect("Label must exist for every property");
 
             results.insert(label, result);
         });
